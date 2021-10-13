@@ -1,0 +1,20 @@
+---
+title: "Homework 3"
+author: "Philip Kim"
+date: "10/12/2021"
+output: github_document
+---
+
+```{r, message = FALSE}
+library(tidyverse)
+```
+
+# Problem 1
+
+```{r}
+library(p8105.datasets)
+data("instacart")
+```
+
+## Dataset description
+
