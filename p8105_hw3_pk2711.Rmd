@@ -2,12 +2,16 @@
 title: "Homework 3"
 author: "Philip Kim"
 date: "10/12/2021"
-output: github_document
+output: 
+  github_document:
+    toc: true
+    toc_depth: 6
 ---
 
 ```{r, message = FALSE}
 library(tidyverse)
 library(knitr)
+library(p8105.datasets)
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -19,7 +23,6 @@ knitr::opts_chunk$set(
 # Problem 1
 
 ```{r}
-library(p8105.datasets)
 data("instacart")
 ```
 
@@ -46,16 +49,15 @@ aisle_df %>%
   filter(n_obs > 10000) %>% 
   mutate(
     aisle = as.factor(aisle),
-    aisle = fct_reorder(aisle, desc(n_obs))
-  ) %>% 
+    aisle = fct_reorder(aisle, (n_obs))) %>% 
   ggplot((aes(x = aisle, y = n_obs))) + 
   labs(
     title = "Item Popularity in Instacart",
     x = "Aisle Name",
     y = "Number of Ordered Items") + 
   theme(plot.title = element_text(hjust = 0.5)) +
-  theme(axis.text.x = element_text(angle = 90, size = 6)) +
-  geom_col()
+  geom_col() +
+  coord_flip()
 ```
 
 
@@ -102,7 +104,80 @@ instacart %>%
 
 # Problem 2
 
+```{r}
+data("brfss_smart2010")
+```
+
 ## Data Cleaning
+
+```{r}
+brfss_tidy_smart2010 =
+  brfss_smart2010 %>% 
+  janitor::clean_names() %>% 
+  filter(topic == "Overall Health",
+         response == "Excellent" |
+         response == "Very good" |
+         response == "Good" |
+         response == "Fair" |   
+         response == "Poor") %>% 
+  mutate(response = as.factor(response),
+         response = ordered(response, levels = c("Poor", "Fair", "Good", "Very good", "Excellent")))
+```
+
+## In 2002, which states were observed at 7 or more locations? What about in 2010?
+
+```{r}
+brfss_tidy_smart2010 %>% 
+  filter(year == 2002 |
+         year == 2010) %>%
+  group_by(year, locationabbr) %>% 
+  summarize(n_obs = n_distinct(locationdesc)) %>% 
+  filter(n_obs >= 7) %>% 
+  arrange(year, (n_obs)) %>% 
+  kable()
+```
+
+There were a total of 6 states that were observed at 7 or more locations in 2002 which include CT, FL, MA, NC, NJ, and PA. Relatively, there were a total of 14 states that were observed at 7 or more locations in 2010 which include CA, CO, FL, MA, MD, NC, NE, NJ, NY, OH, PA, SC, TX, and WA.
+
+## Spaghetti Plot
+
+```{r}
+brfss_tidy_smart2010 %>% 
+  filter(response == "Excellent") %>% 
+  group_by(year, locationabbr) %>% 
+  summarize(mean_data_value = mean(data_value, na.rm = TRUE)) %>%
+  ggplot(aes(x = year, y = mean_data_value)) +
+  labs(
+    x = "Year",
+    y = "Average Data Value within State",
+    title = "Average Data Value of those with \nExcellent Overall Health over Time by State") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line(aes(group = locationabbr))
+```
+
+## Two-Panel Plot
+
+```{r}
+brfss_tidy_smart2010 %>% 
+  filter(year == 2006 |
+         year == 2010,
+         locationabbr == "NY") %>% 
+  group_by(year, response) %>% 
+  summarize(data_value = data_value) %>% 
+  ggplot(aes(x = response, y = data_value)) +
+  labs(
+    x = "Response",
+    y = "Data Value",
+    title = "Distribution of Data Value by Response Type in 2006 and 2010") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_boxplot() +
+  facet_grid(. ~ year)
+```
+
+
+# Problem 3
+
+## Load and tidy Data
 
 ```{r}
 
