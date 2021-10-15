@@ -177,10 +177,55 @@ brfss_tidy_smart2010 %>%
 
 # Problem 3
 
-## Load and tidy Data
+## Load and Tidy Data
 
 ```{r}
-
+accel_df = read_csv("./data/accel_data.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minute_of_day",
+    names_prefix = "activity_",
+    values_to = "activity_count") %>% 
+  mutate(
+    weekend = if_else(day == "Saturday" | day == "Sunday", "weekend", "weekday"),
+    minute_of_day = as.numeric(minute_of_day),
+    day = as.factor(day),
+    day = ordered(day, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))) %>% 
+  relocate(week, day_id, weekend, everything())
 ```
 
+.....
 
+
+## Total Activity per Day
+
+```{r}
+accel_df %>% 
+  group_by(week, day) %>% 
+  summarize(total_activity_count = sum(activity_count)) %>% 
+  kable()
+```
+
+....
+
+
+## 24-hour activity time course plot
+
+```{r}
+accel_df %>% 
+  mutate(
+    hour = minute_of_day %/% 60) %>% 
+  group_by(day_id, day, hour) %>% 
+  summarize(activity_count = sum(activity_count)) %>% 
+  ggplot(aes(x = hour, y = activity_count, color = day)) +
+  labs(
+    x = "Hour of the Day",
+    y = "Activity Count",
+    title = "24 Hour Activity Time Course per Day",
+    color = "Day of the Week") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line(aes(group = day_id))
+```
+
+....
