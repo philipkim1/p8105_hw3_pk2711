@@ -28,11 +28,11 @@ data("instacart")
 
 ## Dataset description
 
-The instacart dataset contains `r nrow(instacart)` rows and `r ncol(instacart)` columns. 
+The instacart dataset contains `r nrow(instacart)` rows and `r ncol(instacart)` columns. This dataset provides information on orders through Instacart via identifiers such as `order_id`, `product_id`, `aisle_id` and etc. Accordingly, it gives in formation on the time of the order such as the day of the week the order was placed, `order_dow`, and the hour of the day, `order_hour_of_day`. Through this data, we can see that most users tend to buy products that they had purchased in the past, which was represented by a `r median(pull(instacart, reordered))` in the dataset. Correspondingly, the largest number of products ordered by a single user was `r max(pull(instacart, add_to_cart_order))`. 
 
-## How many aisles are there, and which aisles are the most items ordered from?
+## Number of Aisles/Most Ordered from Aisles
 
-```{r}
+```{r, message = FALSE}
 aisle_df = 
   instacart %>% 
   group_by(aisle) %>% 
@@ -40,11 +40,11 @@ aisle_df =
   arrange(desc(n_obs))
 ```
 
-There are 134 aisles and the aisles with the most items ordered from are fresh vegetables and fresh fruits aisles with 150,609 and 150,473 orders, respectively.
+There are `r nrow(aisle_df)` aisles and the aisles with the most items ordered from are the fresh vegetables and the fresh fruits aisles with 150,609 and 150,473 orders, respectively. These two aisles have almost double the amount of orders from the next leading aisle, which is quite a big margin.
 
-## Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
+## Aisle Plot
 
-```{r}
+```{r, message = FALSE}
 aisle_df %>% 
   filter(n_obs > 10000) %>% 
   mutate(
@@ -60,10 +60,12 @@ aisle_df %>%
   coord_flip()
 ```
 
+As the graph shows, the fresh vegetables and fresh fruits are the most popular items by a large margin which is then followed by packaged vegetable fruits and yogurt. Towards the bottom of the list of items, with more than 10,000 orders, include butter, oils vinegars, and dry pasta. However, the differences aren't quite as large as we see between the items at the top of the list.
 
-## Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
 
-```{r}
+## Most Popular Item Table
+
+```{r, message = FALSE}
 instacart %>% 
   filter(
     aisle == "baking ingredients" | 
@@ -74,19 +76,22 @@ instacart %>%
   mutate(rank = rank(-n_obs)) %>% 
   filter(rank < 4) %>% 
   arrange(aisle, rank) %>% 
+  relocate(-n_obs) %>% 
   kable(caption = "Most popular items in Baking Ingredients, Dog Food Care, and Packaged Vegetables Fruits")
 ```
 
+Organic Baby Spinach was the most popular packaged vegetable item, whereas Light Brown Sugar was the most popular item in baking ingredients. Accordingly, Snack Sticks Chicken & Rice Recipe Dog Treats was the most popular item in dog food care. Although these were the three most popular items in each aforementioned category, the number of orders in the most popular packaged vegetables fruits items markedly prevailed over the number of items in both baking ingredients and dog food care.  
 
-## Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+## Pink Lady Apples/Coffee Ice Cream Table
 
-```{r}
+```{r, message = FALSE}
 instacart %>% 
   filter(product_name == "Pink Lady Apples" |
          product_name == "Coffee Ice Cream") %>% 
   group_by(product_name, order_dow) %>% 
   summarize(mean_hour = mean(order_hour_of_day)) %>% 
   mutate(
+    mean_hour = round(mean_hour, digits = 2),
     order_dow = recode(order_dow, "0" = "Sun",
                                   "1" = "Mon",
                                   "2" = "Tues",
@@ -101,6 +106,7 @@ instacart %>%
   kable(caption = "Mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week")
 ```
 
+For the Coffee Ice Cream, the mean hour of day in which it is ordered is earlier in the weekends when compared to the weekdays. For the Pink Lady Apples, the mean hour of day that it is ordered is the latest on Wednesday. When comparing the two items, the Coffee Ice Cream is typically ordered later than the Pink Lady Apples.   
 
 # Problem 2
 
@@ -110,7 +116,7 @@ data("brfss_smart2010")
 
 ## Data Cleaning
 
-```{r}
+```{r, message = FALSE}
 brfss_tidy_smart2010 =
   brfss_smart2010 %>% 
   janitor::clean_names() %>% 
@@ -124,9 +130,10 @@ brfss_tidy_smart2010 =
          response = ordered(response, levels = c("Poor", "Fair", "Good", "Very good", "Excellent")))
 ```
 
-## In 2002, which states were observed at 7 or more locations? What about in 2010?
 
-```{r}
+## States observed at 7 or more locations
+
+```{r, message = FALSE}
 brfss_tidy_smart2010 %>% 
   filter(year == 2002 |
          year == 2010) %>%
@@ -137,11 +144,11 @@ brfss_tidy_smart2010 %>%
   kable()
 ```
 
-There were a total of 6 states that were observed at 7 or more locations in 2002 which include CT, FL, MA, NC, NJ, and PA. Relatively, there were a total of 14 states that were observed at 7 or more locations in 2010 which include CA, CO, FL, MA, MD, NC, NE, NJ, NY, OH, PA, SC, TX, and WA.
+There were a total of 6 states that were observed at 7 or more locations in 2002 which include CT, FL, MA, NC, NJ, and PA. Relatively, there were a total of 14 states that were observed at 7 or more locations in 2010 which include CA, CO, FL, MA, MD, NC, NE, NJ, NY, OH, PA, SC, TX, and WA. A total of 5 states were observed at 7 or more locations in both 2002 and 2010, which include FL, MA, NC, NJ, and PA. 
 
 ## Spaghetti Plot
 
-```{r}
+```{r, message = FALSE}
 brfss_tidy_smart2010 %>% 
   filter(response == "Excellent") %>% 
   group_by(year, locationabbr) %>% 
@@ -155,9 +162,11 @@ brfss_tidy_smart2010 %>%
   geom_line(aes(group = locationabbr))
 ```
 
+The lowest average data value is 11.5 and is from WV in 2005. Accordingly, four out of the five lowest average data values are from WV. To contrast, the highest average data value is from UT in 2002. There are no clear trends from this plot but it seems that the average data value from all states, 2002 to 2010, hover around the 20 to 25 mark. 
+
 ## Two-Panel Plot
 
-```{r}
+```{r, message = FALSE}
 brfss_tidy_smart2010 %>% 
   filter(year == 2006 |
          year == 2010,
@@ -174,12 +183,13 @@ brfss_tidy_smart2010 %>%
   facet_grid(. ~ year)
 ```
 
+The distribution of data value seems to be quite similar for both the years 2006 and 2010. The highest data values correspond to the responses `Good` and `Very good` whereas the lowest data values correlate to `Poor` for both 2006 and 2010.  
 
 # Problem 3
 
 ## Load and Tidy Data
 
-```{r}
+```{r, message = FALSE}
 accel_df = read_csv("./data/accel_data.csv") %>% 
   janitor::clean_names() %>% 
   pivot_longer(
@@ -195,29 +205,28 @@ accel_df = read_csv("./data/accel_data.csv") %>%
   relocate(week, day_id, weekend, everything())
 ```
 
-.....
+There are `r nrow(accel_df)` rows and `r ncol(accel_df)` columns within this dataset. There is a specific `day_id` variable that differentiates the day from others and `minute_of_day` variable that lists the exact minute of the day. Accordingly, there is a `weekend` variable that states whether the given day is a weekday or weekend and an `activity_count` that measures the level of activity for any given minute. Throughout the five weeks, the lowest activity count measured was a value of `r min(pull(accel_df, activity_count))` whereas the highest activity count recorded had a value of `r max(pull(accel_df, activity_count))`, which was on Wednesday of the second week. 
 
 
 ## Total Activity per Day
 
-```{r}
+```{r, message = FALSE}
 accel_df %>% 
   group_by(week, day) %>% 
   summarize(total_activity_count = sum(activity_count)) %>% 
   kable()
 ```
 
-....
-
+It seems that as it got closer to the later weeks, the activity count on the weekends started to decrease. Also, the days in the middle of the week seem to be the most consistent in terms of activity count (e.g., Tuesday, Wednesday, Thursday) whereas the other days seem to comparably dynamic.
 
 ## 24-hour activity time course plot
 
-```{r}
+```{r, message = FALSE}
 accel_df %>% 
   mutate(
     hour = minute_of_day %/% 60) %>% 
   group_by(day_id, day, hour) %>% 
-  summarize(activity_count = sum(activity_count)) %>% 
+  summarize(activity_count = sum(activity_count)) %>%
   ggplot(aes(x = hour, y = activity_count, color = day)) +
   labs(
     x = "Hour of the Day",
@@ -228,4 +237,4 @@ accel_df %>%
   geom_line(aes(group = day_id))
 ```
 
-....
+From this graph, the highest activity counts seem to be most prominent at the 20th hour of the day, followed by spikes around the 10 hour mark. Most of the activity seems to start around the 5 hour mark and end towards the 23 hour mark. Accordingly, the hours that have the lowest activity were those around the 24 and 0 hour marks. The participant typically has the highest activity counts for the days of Monday and Friday. This may be due to the weekday starting/ending. 
